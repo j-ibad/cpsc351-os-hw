@@ -1,5 +1,5 @@
-/** 
- * 	Program Name: "Forking Processes" (Quiz 2 for CPSC 351, Fall 2020)
+/**
+ * 	Program Name: "Forking Processes" (HW 1 Pt. 1 for CPSC 351, Fall 2020)
  * 	Details: Quiz 2, using fork and wait to properly create a multi-process program.
  *  Copyright (C) 2020  Josh Ibad
 
@@ -32,6 +32,7 @@
  *
  * Purpose:
  *	Proof-of-concept program where a parent process forks into two children processes, 
+ *	Proof-of-concept program where a parent process forks into two children processes, 
  *	both of which fork into two other children processes. All processes display their
  *	pid, and all children processes display their parent's pid. The parents must wait
  *  for their children to terminate before terminating itself.
@@ -44,136 +45,54 @@
  */
 
 #include <unistd.h>
-#include <sys/wait.h>
-#include <stdio.h>
 #include <stdlib.h>
-
-/* The prototypes */
-void parent();
-void child1();
-void child2();
-void child3();
-void child4();
-void child5();
-void child6();
-
-/**
- * The function called by the FIRST child.
- */
-void child1(){
-	pid_t child_b, child_a = fork();
-	if (child_a < 0){ //First fork error
-		fprintf(stderr, "1st Fork failed in child1() process");
-		exit(-1);
-	}else if (child_a == 0) { // Child A 
-		child3();
-		exit(0);
-	} else {
-		child_b = fork();
-		if (child_b < 0){ //Second fork error
-			fprintf(stderr, "2nd Fork failed in child1() process");
-			exit(-1);
-		}else if (child_b == 0) { //Child B
-			child4();
-			exit(0);
-		} else { //Parent
-			fprintf(stderr, "I am child pid=%d; my parent is pid=%d\n", getpid(), getppid());
-			wait(NULL);
-			wait(NULL);
-			exit(0);
-		}
-	}
-}
-
-/**
- * The function called by the SECOND child.
- */
-void child2(){
-	pid_t child_b, child_a = fork();
-	if (child_a < 0){ //First fork error
-		fprintf(stderr, "1st Fork failed in child2() process");
-		exit(-1);
-	}else if (child_a == 0) { // Child A 
-		child5();
-		exit(0);
-	} else {
-		child_b = fork();
-		if (child_b < 0){ //Second fork error
-			fprintf(stderr, "2nd Fork failed in child2() process");
-			exit(-1);
-		}else if (child_b == 0) {
-			child6();
-			exit(0);
-		} else { //Parent
-			fprintf(stderr, "I am child pid=%d; my parent is pid=%d\n", getpid(), getppid());
-			wait(NULL);
-			wait(NULL);
-			exit(0);
-		}
-	}
-}
-
-/**
- * The function called by the THIRD child.
- */
-void child3(){
-	fprintf(stderr, "I am child pid=%d; my parent is pid=%d\n", getpid(), getppid());
-}
-
-/**
- * The function called by the FOURTH child.
- */
-void child4(){
-	fprintf(stderr, "I am child pid=%d; my parent is pid=%d\n", getpid(), getppid());
-}
-
-
-/**
- * The function called by the FIFTH child.
- */
-void child5(){
-	fprintf(stderr, "I am child pid=%d; my parent is pid=%d\n", getpid(), getppid());
-}
-
-/**
- * The function called by the SIXTH child.
- */
-void child6(){	
-	fprintf(stderr, "I am child pid=%d; my parent is pid=%d\n", getpid(), getppid());
-}
-
-/**
- * The function called by the parent
- */
-void parent(){
-	pid_t child_b, child_a = fork();
-	if (child_a < 0){ //First fork error
-		fprintf(stderr, "1st Fork failed in parent() process");
-		exit(-1);
-	}else if (child_a == 0) { // Child A 
-		child1();
-		exit(0);
-	} else {
-		child_b = fork();
-		if (child_b < 0){ //Second fork error
-			fprintf(stderr, "2nd Fork failed in parent() process");
-			exit(-1);
-		}else if (child_b == 0) { //Child B
-			child2();
-			exit(0);
-		} else { // Parent
-			fprintf(stderr, "I am the original parent; my process ID is pid=%d\n", getpid());
-			wait(NULL);
-			wait(NULL);
-			exit(0);
-		}
-	}
-}
-
+#include <sys/wait.h>
+#include <sys/types.h>
+#include <stdio.h>
+#include <iostream>
+#include <string>
+using namespace std;
 
 /**
  * The main function
  */
 int main(){
-	parent();	
+	string cmdBuff; //Command buffer
+	pid_t pid; // ID of child process
+	do{ //Keep running until the user has typed "exit"
+		/* Prompt the user to enter the command */
+		cerr << "cmd>";
+		cin >> cmdBuff;
+		
+		if (cmdBuff == "help" || cmdBuff == "?"){ //Help message
+			cerr << "Enter a command and press ENTER to run it." << endl <<
+				"Type exit and press ENTER to exit the shell" << endl;
+		}else if(cmdBuff != "exit" || cmdBuff == ""){//If the user wants to exit
+			pid_t pid = fork();		//Create a child
+			if (pid < 0){ 			// Error check if child successfully created
+				perror("fork");
+				exit(-1);
+			}else if (pid == 0) { //Child B
+				/*** TODO: If I am child, I will do this: ****/
+				/* Call execlp() to replace my program with that specified at the command line.
+				 * PLEASE NOTE: YOU CANNOT PASS cmdBuff DIRECTLY to execlp(). It is because 
+				 * cmdBuff is an object of type string (i.e., a class) and execlp() expects
+				 * an array of characters.  However, you can pass cmdBuff.c_str(), which will
+				 * return an array of characters representation of the string object.
+				 * 
+				 * Also, please do not forget to error check your exelp() system calls.
+				 */
+				if(execlp(cmdBuff.c_str(), cmdBuff.c_str(), 0) == -1){
+					exit(-1);
+				}else{
+					exit(0);
+				}
+			} else { // Parent
+				if(wait(NULL) == -1){// Wait for the child process to terminate
+					exit(-1);
+				}
+			}
+		}
+	}while(cmdBuff != "exit");
+	return 0;	
 }
