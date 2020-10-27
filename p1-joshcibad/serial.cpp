@@ -46,134 +46,45 @@
 #include <unistd.h>
 #include <sys/wait.h>
 #include <stdio.h>
+#include <iostream>
 #include <stdlib.h>
-
-/* The prototypes */
-void parent();
-void child1();
-void child2();
-void child3();
-void child4();
-void child5();
-void child6();
-
-/**
- * The function called by the FIRST child.
- */
-void child1(){
-	pid_t child_b, child_a = fork();
-	if (child_a < 0){ //First fork error
-		fprintf(stderr, "1st Fork failed in child1() process");
-		exit(-1);
-	}else if (child_a == 0) { // Child A 
-		child3();
-		exit(0);
-	} else {
-		child_b = fork();
-		if (child_b < 0){ //Second fork error
-			fprintf(stderr, "2nd Fork failed in child1() process");
-			exit(-1);
-		}else if (child_b == 0) { //Child B
-			child4();
-			exit(0);
-		} else { //Parent
-			fprintf(stderr, "I am child pid=%d; my parent is pid=%d\n", getpid(), getppid());
-			wait(NULL);
-			wait(NULL);
-			exit(0);
-		}
-	}
-}
-
-/**
- * The function called by the SECOND child.
- */
-void child2(){
-	pid_t child_b, child_a = fork();
-	if (child_a < 0){ //First fork error
-		fprintf(stderr, "1st Fork failed in child2() process");
-		exit(-1);
-	}else if (child_a == 0) { // Child A 
-		child5();
-		exit(0);
-	} else {
-		child_b = fork();
-		if (child_b < 0){ //Second fork error
-			fprintf(stderr, "2nd Fork failed in child2() process");
-			exit(-1);
-		}else if (child_b == 0) {
-			child6();
-			exit(0);
-		} else { //Parent
-			fprintf(stderr, "I am child pid=%d; my parent is pid=%d\n", getpid(), getppid());
-			wait(NULL);
-			wait(NULL);
-			exit(0);
-		}
-	}
-}
-
-/**
- * The function called by the THIRD child.
- */
-void child3(){
-	fprintf(stderr, "I am child pid=%d; my parent is pid=%d\n", getpid(), getppid());
-}
-
-/**
- * The function called by the FOURTH child.
- */
-void child4(){
-	fprintf(stderr, "I am child pid=%d; my parent is pid=%d\n", getpid(), getppid());
-}
-
-
-/**
- * The function called by the FIFTH child.
- */
-void child5(){
-	fprintf(stderr, "I am child pid=%d; my parent is pid=%d\n", getpid(), getppid());
-}
-
-/**
- * The function called by the SIXTH child.
- */
-void child6(){	
-	fprintf(stderr, "I am child pid=%d; my parent is pid=%d\n", getpid(), getppid());
-}
-
-/**
- * The function called by the parent
- */
-void parent(){
-	pid_t child_b, child_a = fork();
-	if (child_a < 0){ //First fork error
-		fprintf(stderr, "1st Fork failed in parent() process");
-		exit(-1);
-	}else if (child_a == 0) { // Child A 
-		child1();
-		exit(0);
-	} else {
-		child_b = fork();
-		if (child_b < 0){ //Second fork error
-			fprintf(stderr, "2nd Fork failed in parent() process");
-			exit(-1);
-		}else if (child_b == 0) { //Child B
-			child2();
-			exit(0);
-		} else { // Parent
-			fprintf(stderr, "I am the original parent; my process ID is pid=%d\n", getpid());
-			wait(NULL);
-			wait(NULL);
-			exit(0);
-		}
-	}
-}
-
+#include <fstream>
+#include <string>
 
 /**
  * The main function
  */
 int main(){
-	parent();	
+	std::string urlBuffer;
+	std::ifstream file;
+	file.open("urls.txt");
+	//file.open("urls.txt");
+	if( file ){
+		int linecount = 0;
+		pid_t pid;
+		while( getline(file, urlBuffer) ){
+			pid = fork();		//Create a child
+			if (pid < 0){ 			// Error check if child successfully created
+				perror("fork");
+				exit(-1);
+			}else if (pid == 0) { 	//Child B
+				if(execlp("/usr/bin/wget", "wget", urlBuffer, NULL) == -1){
+					std::cerr << "Failed to download " << urlBuffer << std::endl;
+					exit(-1);
+				}else{
+					exit(0);
+				}
+			}else{
+				if(wait(NULL) == -1){// Wait for the child process to terminate
+					std::cerr << "Error encountered while waiting." << std::endl;
+					exit(-1);
+				}
+			}
+			linecount++;
+		}
+	}else{
+		std::cerr << "File urls.txt not found. Terminating..." << std::endl;
+		exit(-1);
+	}
+	return 0;
 }
