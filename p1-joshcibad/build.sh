@@ -4,10 +4,26 @@
 # Program: CPSC 351 - Quiz 2 - Forking Processes
 
 echo "Removing old files if necessary"
-rm ./main.out
+rm *.out
 
-echo "Compiling processes.cpp"
-g++ -o main.out processes.cpp
+echo "Part I: Shell"
+echo "Compiling shell.cpp"
+g++ -o shell.out shell.cpp
 
 echo "Running program"
-./main.out
+./shell.out
+
+echo "\nPart II: Downloader"
+echo "Compiling serial.cpp"
+g++ -o serial.out serial.cpp
+
+echo "Compiling parallel.cpp"
+g++ -o parallel.out parallel.cpp
+
+echo "Running program\n"
+echo "Running and timing serial downloader"
+time ./serial.out
+echo "Running and timing parallel downloader"
+time ./parallel.out
+
+echo "Finished."

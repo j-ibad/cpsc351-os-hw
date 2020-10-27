@@ -68,7 +68,7 @@ int main(){
 				perror("fork");
 				exit(-1);
 			}else if (pid == 0) { 	//Child B
-				if(execlp("/usr/bin/wget", "wget", urlBuffer, NULL) == -1){
+				if(execlp("/usr/bin/wget", "wget", urlBuffer.c_str(), NULL) == -1){
 					std::cerr << "Failed to download " << urlBuffer << std::endl;
 					exit(-1);
 				}else{
