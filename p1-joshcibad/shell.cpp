@@ -83,12 +83,14 @@ int main(){
 				 * Also, please do not forget to error check your exelp() system calls.
 				 */
 				if(execlp(cmdBuff.c_str(), cmdBuff.c_str(), 0) == -1){
+					perror(cmdBuff.c_str());
 					exit(-1);
 				}else{
 					exit(0);
 				}
 			} else { // Parent
 				if(wait(NULL) == -1){// Wait for the child process to terminate
+					perror("wait");
 					exit(-1);
 				}
 			}

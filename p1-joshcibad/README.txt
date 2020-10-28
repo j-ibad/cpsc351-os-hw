@@ -1,7 +1,8 @@
-README for Forking Processes (Quiz 2 for CPSC 351, Prof. Gofman, Fall 2020)
-Time-stamp: <2020-10-21 19:28:36 Josh Ibad>
+README for Assignment 1 for CPSC 351, Prof. Gofman, Fall 2020
+Time-stamp: <2020-10-27 14:36:29 Josh Ibad>
+DISCLAIMER: BONUS WAS ATTEMPTED
 ------------------------------------------------------------
-	Program Name: "Forking Processes" (Quiz 2 for CPSC 351, Fall 2020)
+	Program Name: Assignment 1 for CPSC 351, Fall 2020
 	Details: Quiz 2, using fork and wait to properly create a multi-process program.
 	Copyright (C) 2020  Josh Ibad
 
@@ -20,35 +21,112 @@ Time-stamp: <2020-10-21 19:28:36 Josh Ibad>
 	Author name: Josh Ibad
 	Author email: joshcibad@csu.fullerton.edu
 
-	Program Name: "Forking Processes"
-	Purpose: Proof-of-concept program where a parent process forks into two children 
-	  processes, both of which fork into two other children processes. All processes 
-	  display their pid, and all children processes display their parent's pid. The 
-	  parents must wait for their children to terminate before terminating itself.
-	Programming Languages: One module in C++
-	Date program began:     2020-Oct-21
-	Date program completed: 2020-Oct-21
+	Program Name: Assignment 1
+	Purpose: A three part program. The first consists of a "shell" which takes user
+	input and passes it to the system to run the command. The second consists of a 
+	comparison between a serial downloader and a parallel file downloader. The third
+	part consists of a parallel search program.
+	Programming Languages: 
+	Date program began:     2020-Oct-27
+	Date program completed: 2020-Oct-27
 
-	Files in program:	processes.cpp
+	Files in program:	shell.cpp, serial.cpp, parallel.cpp, multi-search.cpp,
+		build.sh, README.txt, urls.txt
+
+		shell.cpp = The source code file for the Part 1: Shell
+
+		serial.cpp = Source code file for Part 2: Serial v Parallel File Downloading
+		The serial file creates child processes one at a time to download the next
+		url found in urls.txt.
+
+		parallel.cpp = Source code file for Part 2: Serial v Parallel File Downloading
+		The parallel file creates multiple child processes immediately, each assigned
+		to download a url found in urls.txt, concurrently.
 		
-		processes.c = One and only module for Quiz 2, written in C++, using fork and
-		  wait to create a multi-processing program properly.
-		
-		r.sh = Bash script for assembling, compiling, and linking the program
+		urls.txt = A plaintext file consisting of a list of URIs to be downloaded by
+		the Serial and Parallel File Downloaders in Part 2.	
+
+		//Multisearch
+
+		build.sh = Bash script for compiling and running programs.
 		
 		README.txt = (This file). Read me describing program, author details, etc.
 	
-	Status: Completed (Finished as of 2020-Oct-21). Testing on Ubuntu 20.04, g++9.3.0 success.
+	Status: Completed (Finished as of 2020-Oct-27). Testing on Ubuntu 20.04, g++9.3.0 success.
  
 	References:
-		Prof. Mikhail Gofman's Quiz 2 Starter Code: "skeleton.cpp",
-			and Example Code: "fork.c"
+		Prof. Mikhail Gofman's Sample Code in Titanium and Lecture Notes
 		
 Compilation and Execution instructions:
-	Compile: 	g++ -o main.out processes.cpp
-	Run:		./main.out
+	Part 1
+	  Compile: 	g++ -o shell.out shell.cpp
+	  Run:		./shell.out
+
+	Part 2
+	  Compile: 	g++ -o serial.out serial.cpp
+	  Run:		time ./serial.out
+	  Compile: 	g++ -o parallel.out parallel.cpp
+	  Run:		time ./parallel.out
 
 Warnings:
 	* The program was ran under tuffix distro with Ubuntu 20.04 OS and g++ v9.3.0.
 	  The program is expected but not guaranteed to work for other operating systems or
 	  other compilers or previous version thereof.
+
+	* URIs in urls.txt has been changed to Ubuntu 18.04.5 since 16.04.5 urls were not working
+
+----------------------------------------------------------------------------------------------------
+Write Up:
+Part 1: N/A
+Part 2:
+A.) Results
+	Serial:
+	  Run 1
+		real    3m49.394s
+		user    0m11.431s
+		sys     0m37.607s
+	  Run 2
+		real    3m50.733s
+		user    0m10.663s
+		sys     0m35.735s
+	  Run 3
+		real    4m1.682s
+		user    0m10.808s
+		sys     0m36.333s
+	Parallel:
+	  Run 1
+		real    3m53.099s
+		user    0m12.285s
+		sys     0m42.662s
+	  Run 2
+		real    3m51.222s
+		user    0m13.037s
+		sys     0m45.943s
+	  Run 3
+		real    3m56.936s
+		user    0m13.000s
+		sys     0m42.848s
+Notes: Variation in time may have been caused by other people using the internet in the household,
+or simple variations in internet usage in my very own device while running these commands
+
+B.) Questions
+	1.) 	Real time is the real human time (like a wall clock time) since start to end of execution.
+		User time is only the amount of CPU time allocated to the program within the process. 
+		Sys time is only the amount of CPU time spent within the kernel (aka, running system 
+			related tasks), instead of library code.
+
+	2.) For this program, sys is longer than user. This is because the majority of the program is done
+	within system calls to fork, execpl, and wait.
+
+	3.) Most of the runs resulted in the serial downloader finishing faster. I think this is because
+	the serial downloading does not have as much tasks to do in terms of scheduling and orchestrating
+	the running of parallel processes. The parallel downloader required the system to work more on
+	switching between the two processes and making sure the right process obtains the right data and
+	resources, making it run slightly slower. I do think this is only the case because we have a small
+	list of 2 URLs, and only a small machine to run it on.
+
+	4.) When ran on more files, the parallel downloader quickly catched up in speed. I think this is
+	because the added overhead from orchestrating multiple processes to run concurrently immediately
+	became small in comparison to the multiple large files being downloaded, allowing the parallel to
+	catch up immediately in terms of speed.
+	

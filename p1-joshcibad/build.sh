@@ -23,6 +23,9 @@ g++ -o parallel.out parallel.cpp
 echo "Running program\n"
 echo "Running and timing serial downloader"
 time ./serial.out
+
+rm ubuntu-* 2> /dev/null
+
 echo "Running and timing parallel downloader"
 time ./parallel.out
 

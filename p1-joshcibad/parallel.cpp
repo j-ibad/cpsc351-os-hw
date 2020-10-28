@@ -70,6 +70,7 @@ int main(){
 			}else if (pid == 0) { 	//Child B
 				if(execlp("/usr/bin/wget", "wget", urlBuffer.c_str(), NULL) == -1){
 					std::cerr << "Failed to download " << urlBuffer << std::endl;
+					perror("wget");
 					exit(-1);
 				}else{
 					exit(0);
@@ -81,6 +82,7 @@ int main(){
 			for(int i=0; i<linecount; i++){
 				if(wait(NULL) == -1){// Wait for the child process to terminate
 					std::cerr << "Error encountered while waiting." << std::endl;
+					perror("wait");
 					exit(-1);
 				}
 			}
