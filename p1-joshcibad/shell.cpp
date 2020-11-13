@@ -1,6 +1,9 @@
-/**
- * 	Program Name: "Forking Processes" (HW 1 Pt. 1 for CPSC 351, Fall 2020)
- * 	Details: Quiz 2, using fork and wait to properly create a multi-process program.
+/** 
+ * 	Program Name: Assignment 1 for CPSC 351, Prof. Gofman, Fall 2020
+ * 	Details: A three part program. The first consists of a "shell" which takes user
+ *	input and passes it to the system to run the command. The second consists of a 
+ *	comparison between a serial downloader and a parallel file downloader. The third
+ *	part consists of a parallel linear search program.
  *  Copyright (C) 2020  Josh Ibad
 
  *	This program is free software: you can redistribute it and/or modify
@@ -20,28 +23,26 @@
  * Author name: Josh Ibad
  * Author email: joshcibad@csu.fullerton.edu
  * 
- * Program name: "Forking Processes"
- * Programming Languages: One module in C++
- * Date program began:     2020-Oct-21
- * Date program completed: 2020-Oct-21
- * Files in program:	processes.cpp
- * Status: Completed (Finished as of 2020-Oct-21). Testing on Ubuntu 20.04, g++9.3.0 success.
+ * Program name: Assignment 1 for CPSC 351, Prof. Gofman, Fall 2020
+ * Programming Languages: Four modules in C++
+ * Date program began:     2020-Oct-28
+ * Date program completed: 2020-Oct-28
+ * Files in program:	shell.cpp, serial.cpp, parallel.cpp, multi-search.cpp
+ * Status: Completed (Finished as of 2020-Oct-28). Testing on Ubuntu 20.04, g++9.3.0 success.
  *
  * References:
- *	Prof. Mikhail Gofman's Quiz 2 Starter Code: "skeleton.cpp" and Example Code: "fork.c"
+ *	Prof. Mikhail Gofman's Starter Code and Lecture Notes
  *
  * Purpose:
- *	Proof-of-concept program where a parent process forks into two children processes, 
- *	Proof-of-concept program where a parent process forks into two children processes, 
- *	both of which fork into two other children processes. All processes display their
- *	pid, and all children processes display their parent's pid. The parents must wait
- *  for their children to terminate before terminating itself.
+ *	Acts a shell, accepting commands (no arguments), and forks a child process to execute the
+ *	command, with the parent waiting for its termination. User can type help for a simple
+ *	help messag,e and must enter "exit" to exit the shell program.
  *
  * This file:
- *	Filename: processes.cpp
+ *	Filename: shell.cpp
  *	Language: C++
- *	Compile: g++ -o main.out processes.cpp
- *	Run: ./main.out
+ *	Compile: g++ -o shell.out shell.cpp
+ *	Run: ./shell.out
  */
 
 #include <unistd.h>
@@ -73,15 +74,6 @@ int main(){
 				perror("fork");
 				exit(-1);
 			}else if (pid == 0) { //Child B
-				/*** TODO: If I am child, I will do this: ****/
-				/* Call execlp() to replace my program with that specified at the command line.
-				 * PLEASE NOTE: YOU CANNOT PASS cmdBuff DIRECTLY to execlp(). It is because 
-				 * cmdBuff is an object of type string (i.e., a class) and execlp() expects
-				 * an array of characters.  However, you can pass cmdBuff.c_str(), which will
-				 * return an array of characters representation of the string object.
-				 * 
-				 * Also, please do not forget to error check your exelp() system calls.
-				 */
 				if(execlp(cmdBuff.c_str(), cmdBuff.c_str(), 0) == -1){
 					perror(cmdBuff.c_str());
 					exit(-1);

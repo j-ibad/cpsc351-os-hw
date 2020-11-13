@@ -1,6 +1,9 @@
 /** 
- * 	Program Name: "Forking Processes" (Quiz 2 for CPSC 351, Fall 2020)
- * 	Details: Quiz 2, using fork and wait to properly create a multi-process program.
+ * 	Program Name: Assignment 1 for CPSC 351, Prof. Gofman, Fall 2020
+ * 	Details: A three part program. The first consists of a "shell" which takes user
+ *	input and passes it to the system to run the command. The second consists of a 
+ *	comparison between a serial downloader and a parallel file downloader. The third
+ *	part consists of a parallel linear search program.
  *  Copyright (C) 2020  Josh Ibad
 
  *	This program is free software: you can redistribute it and/or modify
@@ -20,27 +23,29 @@
  * Author name: Josh Ibad
  * Author email: joshcibad@csu.fullerton.edu
  * 
- * Program name: "Forking Processes"
- * Programming Languages: One module in C++
- * Date program began:     2020-Oct-21
- * Date program completed: 2020-Oct-21
- * Files in program:	processes.cpp
- * Status: Completed (Finished as of 2020-Oct-21). Testing on Ubuntu 20.04, g++9.3.0 success.
+ * Program name: Assignment 1 for CPSC 351, Prof. Gofman, Fall 2020
+ * Programming Languages: Four modules in C++
+ * Date program began:     2020-Oct-28
+ * Date program completed: 2020-Oct-28
+ * Files in program:	shell.cpp, serial.cpp, parallel.cpp, multi-search.cpp
+ * Status: Completed (Finished as of 2020-Oct-28). Testing on Ubuntu 20.04, g++9.3.0 success.
  *
  * References:
- *	Prof. Mikhail Gofman's Quiz 2 Starter Code: "skeleton.cpp" and Example Code: "fork.c"
+ *	Prof. Mikhail Gofman's Starter Code and Lecture Notes
  *
  * Purpose:
- *	Proof-of-concept program where a parent process forks into two children processes, 
- *	both of which fork into two other children processes. All processes display their
- *	pid, and all children processes display their parent's pid. The parents must wait
- *  for their children to terminate before terminating itself.
+ *	The program accepts a filename from which to search, a key to search for, and
+ *	the number of processes to run concurrently. The program then loads the file
+ *	contents into a vector and creates the specified number of processes to
+ *	linearly search for the specified key concurrently. Once a child processes 
+ *	finds the key, the value is sent to the parent (using a pipe) and the other
+ *	children are killed.
  *
  * This file:
- *	Filename: processes.cpp
+ *	Filename: multi-search.cpp
  *	Language: C++
- *	Compile: g++ -o main.out processes.cpp
- *	Run: ./main.out
+ *	Compile: g++ -o multi-search multi-search.cpp
+ *	Run: ./multi-search <FILENAME> <SEARCH_KEY> <NUMBER_OF_PROCESSES>
  */
 
 #include <unistd.h>
@@ -53,6 +58,8 @@
 #include <fstream>
 #include <string>
 #include <vector>
+
+int pipefd[2];
 
 int partial_linear_search(std::vector<std::string> vec, std::string key, int beg, int end){
 	for(int i=beg; i<end && i<vec.size(); i++){
@@ -80,6 +87,12 @@ int main(int argc, char* argsv[]){
 		return 1;
 	}
 	
+	/* Create pipe for children to return resulting index to */
+	if(pipe(pipefd) < 0){
+		perror("pipe");
+		exit(-1);
+	}
+	
 	/* Open file */
 	std::ifstream file;
 	file.open( file_name );
@@ -94,10 +107,11 @@ int main(int argc, char* argsv[]){
 		/* Repeat contents to confirm contents with user */
 		std::cout << "Contents of list:" << std::endl;
 		int len = vec.size();
-		for( int i=0; i<len; i++) {std::cout << vec[i] << std::endl;}
-		std::cout << std::endl;
+		for(int i=0; i<len; i++) {
+			printf("[%d] %s\n", i, vec[i].c_str());
+		}
+		std::cout << "\t***End of contents of list***" << std::endl << std::endl;
 		
-		int retVal = -1;
 		int width = len / N;
 		pid_t pid, child_pid[N];
 		for(int i=0; i<N; i++){
@@ -110,7 +124,12 @@ int main(int argc, char* argsv[]){
 				if(search_index == -1){
 					exit(1);
 				}else{
-					retVal = search_index;
+					close(pipefd[0]);
+					if(write(pipefd[1], &search_index, sizeof(search_index)) < 0){
+						perror("write");
+						exit(-1);
+					}
+					close(pipefd[1]);
 					exit(0);
 				}
 			}else{
@@ -122,9 +141,18 @@ int main(int argc, char* argsv[]){
 			for(int i=0; i<N; i++){
 				if(wait(&status) < 1){ perror("wait"); exit(-1);}
 				if(WEXITSTATUS(status) == 0){
+					/* Read shared memory for index */
+					int retVal;
+					close(pipefd[1]);
+					if(read(pipefd[0], &retVal, sizeof(retVal)) < 0){
+						perror("read");
+						exit(-1);
+					}
+					close(pipefd[0]);
+					
+					/* Print results and kill remaining children */
 					printf("Key found at index %d\n", retVal);
 					for(int j=0; j<N; j++){
-						std::cout << "[Child " << j << "] "<< child_pid[j] << std::endl;
 						kill(child_pid[j], SIGKILL);
 					}
 					return 0;
@@ -139,40 +167,4 @@ int main(int argc, char* argsv[]){
 			" or it might be empty." << std::endl;
 		return 1;
 	}
-	
-	
-	/*std::string urlBuffer;
-	std::ifstream file;
-	file.open("urls.txt");
-	//file.open("urls.txt");
-	if( file ){
-		int linecount = 0;
-		pid_t pid;
-		while( getline(file, urlBuffer) ){
-			pid = fork();		//Create a child
-			if (pid < 0){ 			// Error check if child successfully created
-				perror("fork");
-				exit(-1);
-			}else if (pid == 0) { 	//Child B
-				if(execlp("/usr/bin/wget", "wget", urlBuffer.c_str(), NULL) == -1){
-					std::cerr << "Failed to download " << urlBuffer << std::endl;
-					perror("wget");
-					exit(-1);
-				}else{
-					exit(0);
-				}
-			}else{
-				if(wait(NULL) == -1){// Wait for the child process to terminate
-					std::cerr << "Error encountered while waiting." << std::endl;
-					perror("wait");
-					exit(-1);
-				}
-			}
-			linecount++;
-		}
-	}else{
-		std::cerr << "File urls.txt not found. Terminating..." << std::endl;
-		exit(-1);
-	}
-	return 0;*/
 }

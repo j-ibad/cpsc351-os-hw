@@ -1,6 +1,9 @@
 /** 
- * 	Program Name: "Forking Processes" (Quiz 2 for CPSC 351, Fall 2020)
- * 	Details: Quiz 2, using fork and wait to properly create a multi-process program.
+ * 	Program Name: Assignment 1 for CPSC 351, Prof. Gofman, Fall 2020
+ * 	Details: A three part program. The first consists of a "shell" which takes user
+ *	input and passes it to the system to run the command. The second consists of a 
+ *	comparison between a serial downloader and a parallel file downloader. The third
+ *	part consists of a parallel linear search program.
  *  Copyright (C) 2020  Josh Ibad
 
  *	This program is free software: you can redistribute it and/or modify
@@ -20,27 +23,25 @@
  * Author name: Josh Ibad
  * Author email: joshcibad@csu.fullerton.edu
  * 
- * Program name: "Forking Processes"
- * Programming Languages: One module in C++
- * Date program began:     2020-Oct-21
- * Date program completed: 2020-Oct-21
- * Files in program:	processes.cpp
- * Status: Completed (Finished as of 2020-Oct-21). Testing on Ubuntu 20.04, g++9.3.0 success.
+ * Program name: Assignment 1 for CPSC 351, Prof. Gofman, Fall 2020
+ * Programming Languages: Four modules in C++
+ * Date program began:     2020-Oct-28
+ * Date program completed: 2020-Oct-28
+ * Files in program:	shell.cpp, serial.cpp, parallel.cpp, multi-search.cpp
+ * Status: Completed (Finished as of 2020-Oct-28). Testing on Ubuntu 20.04, g++9.3.0 success.
  *
  * References:
- *	Prof. Mikhail Gofman's Quiz 2 Starter Code: "skeleton.cpp" and Example Code: "fork.c"
+ *	Prof. Mikhail Gofman's Starter Code and Lecture Notes
  *
  * Purpose:
- *	Proof-of-concept program where a parent process forks into two children processes, 
- *	both of which fork into two other children processes. All processes display their
- *	pid, and all children processes display their parent's pid. The parents must wait
- *  for their children to terminate before terminating itself.
+ *	The serial file creates child processes one at a time to download the next
+ *	url found in urls.txt.
  *
  * This file:
- *	Filename: processes.cpp
+ *	Filename: serial.cpp
  *	Language: C++
- *	Compile: g++ -o main.out processes.cpp
- *	Run: ./main.out
+ *	Compile: g++ -o serial.out serial.cpp
+ *	Run: time ./serial.out
  */
 
 #include <unistd.h>
